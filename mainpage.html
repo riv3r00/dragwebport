@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>River Lassoff - Digital Art</title>
+  <style>
+
+.logo-menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.logo:hover {
+  transform: scale(1.1);
+}
+
+.dropdown {
+  display: none;
+  flex-direction: column;
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown a {
+  color: rgb(162, 155, 155);
+  text-decoration: none;
+  font-family: sans-serif;
+  margin: 8px 0;
+}
+
+.dropdown a:hover {
+  text-decoration: underline;
+}
+
+
+#blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  backdrop-filter: blur(0px);
+  z-index: 0;
+  transition: backdrop-filter 0.3s ease;
+  pointer-events: none;
+}
+
+   body {
+  margin: 0;
+  overflow: hidden;
+  background-image: url("DSC00508.JPG");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  height: 100vh;
+  width: 100vw;
+  cursor: crosshair;
+}
+
+    img.art {
+  position: absolute;
+  cursor: grab;
+  border-radius: 0; /* optional: avoids rounding transparent edges */
+  user-select: none;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  width: 200px; /* adjust as needed */
+  height: auto;
+}
+
+img.art:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
+  z-index: 10;
+}
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+    #fullscreen-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+#fullscreen-image {
+  max-height: 90%;
+  max-width: 60%;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+#image-description {
+  color: white;
+  margin-left: 40px;
+  max-width: 30%;
+  font-family: sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="logo-menu">
+    <img src="rlp.png" alt="Logo" class="logo" />
+    <div class="dropdown" id="dropdown-menu">
+      <a href="#">About</a>
+      <a href="#">Shop</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  
+
+  <!-- Example art images (replace with your own!) -->
+  <img src="americanflagold.png" class="art" />
+  <img src="stickerflag (1).png" class="art" />
+  <img src="flagsfortroyv2.png" class="art" />
+  <img src="salemsalemsalem.png" class="art" />
+  <img src="wvclogos.png" class="art" />
+  <img src="peacesignsv2.png" class="art" />
+  <img src="boolynewv2.png" class="art" />
+  <img src="thaicig.png" class="art" />
+  <img src="sscirclechrii.png" class="art" />
+  <canvas id="trail-canvas"></canvas>
+
+  <div id="blur-overlay"></div>
+  <div id="fullscreen-view">
+    <img id="fullscreen-image" src="" />
+    <div id="image-description">Description goes here...</div>
+  </div>
+  
+  <script>
+const fullscreenView = document.getElementById('fullscreen-view');
+const fullscreenImage = document.getElementById('fullscreen-image');
+const imageDescription = document.getElementById('image-description');
+
+// Optional: Define descriptions for each image
+const descriptions = {
+  "https://via.placeholder.com/150": "This is a placeholder for a painting about loss.",
+  "https://via.placeholder.com/100": "This image represents early experimental work.",
+  "https://via.placeholder.com/120": "A minimalist study in tone and form.",
+  "https://via.placeholder.com/80": "Sketch from the 2023 zine series."
+};
+
+document.querySelectorAll('.art').forEach(img => {
+  let isDragging = false;
+  let startX, startY;
+
+  img.addEventListener('mousedown', e => {
+    startX = e.clientX;
+    startY = e.clientY;
+    isDragging = false;
+  });
+
+  img.addEventListener('mousemove', e => {
+    if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+      isDragging = true;
+    }
+  });
+
+  img.addEventListener('mouseup', e => {
+    if (!isDragging) {
+      fullscreenImage.src = img.src;
+      imageDescription.innerText = descriptions[img.src] || "No description available.";
+      fullscreenView.style.display = 'flex';
+    }
+  });
+});
+// Close fullscreen view by clicking outside the image or pressing ESC
+fullscreenView.addEventListener('click', (e) => {
+  if (e.target === fullscreenView) {
+    fullscreenView.style.display = 'none';
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    fullscreenView.style.display = 'none';
+  }
+});
+
+
+    document.addEventListener('click', (e) => {
+  if (!document.querySelector('.logo-menu').contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+    const logo = document.querySelector('.logo');
+const dropdown = document.getElementById('dropdown-menu');
+
+logo.addEventListener('click', () => {
+  dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+});
+
+    const artElements = document.querySelectorAll('.art');
+    const canvas = document.getElementById('trail-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const blurOverlay = document.getElementById('blur-overlay');
+
+artElements.forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    blurOverlay.style.backdropFilter = 'blur(0px)';
+  });
+
+  el.addEventListener('mouseleave', () => {
+    blurOverlay.style.backdropFilter = 'blur(0px)';
+  });
+
+  el.addEventListener('mousedown', () => {
+    blurOverlay.style.backdropFilter = 'blur(1px)';
+  });
+
+  el.addEventListener('mouseup', () => {
+    blurOverlay.style.backdropFilter = 'blur(0px)';
+  });
+});
+
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Random position and drag logic
+    artElements.forEach(el => {
+      el.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+      el.style.top = Math.random() * (window.innerHeight - 150) + 'px';
+
+      el.onmousedown = function(e) {
+        e.preventDefault();
+        el.style.cursor = 'grabbing';
+        const shiftX = e.clientX - el.getBoundingClientRect().left;
+        const shiftY = e.clientY - el.getBoundingClientRect().top;
+
+        function moveAt(pageX, pageY) {
+          el.style.left = pageX - shiftX + 'px';
+          el.style.top = pageY - shiftY + 'px';
+        }
+
+        function onMouseMove(e) {
+          moveAt(e.pageX, e.pageY);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.onmouseup = function() {
+          document.removeEventListener('mousemove', onMouseMove);
+          el.onmouseup = null;
+          el.style.cursor = 'grab';
+        };
+      };
+
+      el.ondragstart = () => false;
+    });
+
+    // Particle trail and sparkler logic
+    let particles = [];
+
+    function getRandomTrailColor() {
+      const colors = ['#ff0000', '#ffffff', '#0000ff'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function addTrail(x, y) {
+      particles.push({
+        x, y,
+        alpha: 1,
+        radius: Math.random() * 3 + 2,
+        color: getRandomTrailColor(),
+        type: 'trail'
+      });
+    }
+
+    function addSparkler(x, y) {
+      for (let i = 0; i < 20; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 3 + 1;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          radius: Math.random() * 2 + 1,
+          color: getRandomTrailColor(),
+          type: 'spark'
+        });
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter(p => p.alpha > 0.05);
+
+      particles.forEach(p => {
+        if (p.type === 'spark') {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.96;
+          p.vy *= 0.96;
+        }
+
+        p.alpha *= 0.96;
+        p.radius *= 0.97;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      requestAnimationFrame(animateParticles);
+    }
+
+    let sparkCooldown = 0;
+    document.addEventListener('mousemove', e => {
+      addTrail(e.clientX, e.clientY);
+      if (Math.random() < 0.05 && sparkCooldown <= 0) {
+        addSparkler(e.clientX, e.clientY);
+        sparkCooldown = 5;
+      }
+      sparkCooldown--;
+    });
+
+    animateParticles();
+  </script>
+</body>
+</html>
